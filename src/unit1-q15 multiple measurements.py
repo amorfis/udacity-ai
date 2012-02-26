@@ -9,13 +9,12 @@ measurements = ['red', 'green']
 pHit = 0.6
 pMiss = 0.2
 
-def sense(p, Z):
+def sense(p, mesaurement):
     q=[]
     for i, prob in enumerate(p):
-        for mesaurement in Z:
-            hit = (mesaurement == world[i])
-            multiplier = (hit * pHit + (1 - hit) * pMiss)
-            prob = prob * multiplier
+        hit = (mesaurement == world[i])
+        multiplier = (hit * pHit + (1 - hit) * pMiss)
+        prob = prob * multiplier
 
         q.append(prob)
 
@@ -25,5 +24,7 @@ def sense(p, Z):
 
     return q
 
+for i in range(2):
+    p = sense(p, measurements[i])
     
 print sense(p, measurements)
