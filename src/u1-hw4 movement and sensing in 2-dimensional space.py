@@ -1,14 +1,16 @@
-colors = [['green', 'green', 'green'],
-          ['green', 'red', 'red'],
-          ['green', 'green', 'green']]
+colors = [['red', 'green', 'green', 'red' , 'red'],
+          ['red', 'red', 'green', 'red', 'red'],
+          ['red', 'red', 'green', 'green', 'red'],
+          ['red', 'red', 'red', 'red', 'red']]
 
-measurements = ['red', 'red']
+measurements = ['green', 'green', 'green' ,'green', 'green']
 
-motions = [[0,0], [0,1]]
 
-sensor_right = 1
+motions = [[0,0],[0,1],[1,0],[1,0],[0,1]]
 
-p_move = 0.5
+sensor_right = 0.7
+
+p_move = 0.8
 
 def show(p):
     for i in range(len(p)):
@@ -48,27 +50,13 @@ def move(p, U):
     movementInRow = U[0]
     movementInCol = U[1]
 
-    temp_p_move = p_move
-
-    if abs(movementInRow) + abs(movementInCol) == 0:
-        temp_p_move = 1
-
     for r in range(rows):
         q.append([])
         for c in range(cols):
-            p_wrongMove = (1 - temp_p_move) / 2 * (abs(movementInRow) + abs(movementInCol))
-
             previousRow = (r - movementInRow) % rows
             previousCol = (c - movementInCol) % cols
 
-            s = temp_p_move * p[previousRow][previousCol]
-            s += p_wrongMove * p[(previousRow - 1) % rows][previousCol] * abs(movementInRow)
-            s += p_wrongMove * p[(previousRow + 1) % rows][previousCol] * abs(movementInRow)
-            s += p_wrongMove * p[previousRow][(previousCol - 1) % cols] * abs(movementInCol)
-            s += p_wrongMove * p[previousRow][(previousCol + 1) % cols] * abs(movementInCol)
-
-            sumProb = temp_p_move + p_wrongMove * abs(movementInRow) * 2 + p_wrongMove * abs(movementInCol) * 2
-            print sumProb
+            s = p_move * p[previousRow][previousCol] + (1-p_move) * p[r][c]
 
             q[r].append(s)
 
