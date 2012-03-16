@@ -107,7 +107,7 @@ class robot:
 
 
 def eval(r, p):
-    sum = 0.0;
+    sum = 0.0
     for i in range(len(p)): # calculate mean error
         dx = (p[i].x - r.x + (world_size/2.0)) % world_size - (world_size/2.0)
         dy = (p[i].y - r.y + (world_size/2.0)) % world_size - (world_size/2.0)
