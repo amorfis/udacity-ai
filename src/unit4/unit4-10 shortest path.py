@@ -137,3 +137,6 @@ def getPossibleNonVisitedMoves(current, openList, visited):
         openList.append([current[0] + cost, possibility[0], possibility[1]])
 
     return possibilities
+
+for row in search():
+    print row
