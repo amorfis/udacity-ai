@@ -58,177 +58,56 @@ action_name = ['R', '#', 'L']
 # modify code below
 # ----------------------------------------
 
-#def compute_next_steps(current):
-#    next_steps = []
-#    orientation = current[2]
-#
-#    for i in range(len(action)):
-#        new_orientation = orientation + action[i]
-#        new_orientation = new_orientation % len(forward)
-#        move = forward[new_orientation]
-#
-#        next_step = [current[0] + move[0], current[1] + move[1], new_orientation, current[3] + cost[i]]
-#
-#        #Check off board
-#        if next_step[0] < 0 or next_step[0] >= len(grid) or next_step[1] < 0 or next_step[1] >= len(grid[0]):
-#            continue
-#
-#        #Check if already visited
-##        if visited[next_step[0]][next_step[1]]:
-##            continue
-#
-#        #Check for obstacle
-#        if grid[next_step[0]][next_step[1]] == 1:
-#            continue
-#
-#        next_steps.append(next_step)
-#
-#    return next_steps
+def compute_to_goal(path_goal):
+    visited = [[[999 for row in range(len(grid[0]))] for col in range(len(grid))] for theta in range(4)]
+    output = [[[999 for col in range(len(grid[0]))] for row in range(len(grid))] for theta in range(4)]
 
-def getMoveName(prev, current):
-    for i in range(len(delta)):
-        currentDelta = delta[i]
-        prevPlusDelta = [prev[0] + currentDelta[0], prev[1] + currentDelta[1]]
-        if prevPlusDelta == current:
-            return delta_name[i]
+    possible_prev_steps = []
+    for i in range(4):
+        possible_prev_steps.append([path_goal[0], path_goal[1], i, 0])
+    while len(possible_prev_steps) > 0:
+        possible_prev_steps_for_next_iter = []
+        for current in possible_prev_steps:
+            old_value = output[current[2]][current[0]][current[1]]
+            if old_value > current[3]:
+                output[current[2]][current[0]][current[1]] = current[3]
+
+            possible_prev_steps_for_next_iter.extend(compute_possible_prev_steps(current, visited))
+
+        possible_prev_steps = possible_prev_steps_for_next_iter
+
+    return output
 
 
-def addToListOnPosition(list, entry, position):
-    while(len(list) < position+1):
-        list.append(0)
+def compute_possible_prev_steps(current, visited):
+    prev_steps = []
+    orientation = current[2]
 
-    list[position] = entry
+    for i in range(len(action)):
+        prev_orientation = orientation - action[i]
+        prev_orientation = prev_orientation % len(forward)
 
-def already_on_grid(movesGrid, position):
-    return movesGrid[position[0]][position[1]] != ' '
+        #move was made with current orientation. Orientation is changed first when moving, then the move is actioned
+        move = forward[orientation]
 
-def fill_in_grid_from(current, movesGrid, distances):
-    current_position = current
+        prev_step = [current[0] - move[0], current[1] - move[1], prev_orientation, current[3] + cost[i]]
 
-    current = [0, current[0], current[1]]
-    openList = []
-    openList.append(current)
-
-    visited = []
-
-    moves = [current_position]
-
-    step = 0
-    goal_reached = True
-    while current_position[0] != goal[0] or current_position[1] != goal[1]:
-        visited.append(current_position)
-        getPossibleNonVisitedMoves(current, openList, visited, distances)
-
-        current = getNonVisitedPossibilityWithMinF(openList, visited)
-        current_position = [current[1], current[2]]
-
-        if current == "none":
-            goal_reached = False
-            break
-
-        addToListOnPosition(moves, current_position, current[0])
-        if already_on_grid(movesGrid, current_position):
-            break
-
-        step += 1
-
-    if goal_reached:
-        for i in range(1, len(moves)):
-            prev = moves[i-1]
-            current = moves[i]
-
-            name = getMoveName(prev, current)
-            movesGrid[prev[0]][prev[1]] = name
-
-def getNonVisitedPossibilityWithMinF(possibilities, visited):
-    min = "none"
-    for current in possibilities:
-        if [current[1], current[2]] in visited:
-            continue
-        if min == "none" or current[3] < min[3]:
-            min = current
-
-    return min
-
-def getPossibleNonVisitedMoves(current, openList, visited, distances):
-    possibilities = []
-    for move in delta:
-        possibility = [current[1] + move[0], current[2] + move[1]]
-
-        x = possibility[1]
-        y = possibility[0]
-        #Remove if off grid
-        if x < 0 or x >= len(grid[0]) or y < 0 or y >= len(grid):
-            continue
-        #Remove if already visited
-        if [possibility[0], possibility[1]] in visited:
-            continue
-        #Remove if on obstacle
-        if grid[y][x] == 1:
+        #Check off board
+        if prev_step[0] < 0 or prev_step[0] >= len(grid) or prev_step[1] < 0 or prev_step[1] >= len(grid[0]):
             continue
 
-        possibilities.append(possibility)
-
-    for possibility in possibilities:
-        x = possibility[1]
-        y = possibility[0]
-        openList.append([current[0] + cost_step, y, x, current[0] + distances[y][x]])
-
-    return possibilities
-
-#def optimum_policy():
-#
-#
-#    movesGrid = [[' ' for row in range(len(grid[0]))] for col in range(len(grid))]
-#
-#    for r in range(len(grid)):
-#        for c in range(len(grid[r])):
-#            if grid[r][c] == 1:
-#                continue
-#
-#            start = [r, c]
-#            fill_in_grid_from(start, movesGrid, distances)
-#
-#    movesGrid[goal[0]][goal[1]] = '*'
-#
-#    return distances
-
-
-
-
-
-
-#--------------------------------
-def search():
-    current = [0, init[0], init[1]]
-    openList = []
-    openList.append(current)
-    visited = []
-    visited.append([current[1], current[2]])
-
-    while current[1] != goal[0] or current[2] != goal[1]:
-        visited.append([current[1], current[2]])
-        possibilities = getPossibleNonVisitedMoves(current, openList, visited)
-
-        withMinG = getNonVisitedPossibilityWithMinG(openList, visited)
-
-        if withMinG == "none":
-            return "fail"
-
-        current = withMinG
-
-    return current
-
-def getNonVisitedPossibilityWithMinG(possibilities, visited):
-    min = "none"
-    for current in possibilities:
-        if [current[1], current[2]] in visited:
+#        Check if already visited
+        visited_value = visited[prev_step[2]][prev_step[0]][prev_step[1]]
+        if visited_value <= prev_step[3]:
             continue
-        if min == "none" or current[0] < min[0]:
-            min = current
 
-    return min
+        #Check for obstacle
+        if grid[prev_step[0]][prev_step[1]] == 1:
+            continue
 
+        prev_steps.append(prev_step)
+
+    return prev_steps
 
 
 def get_possible_non_visited_moves(current, openList, visited, distances):
@@ -257,102 +136,88 @@ def get_possible_non_visited_moves(current, openList, visited, distances):
 
     return possibilities
 
+def get_non_visited_possibility_with_min_distance(possibilities, visited):
+    min = "none"
+    for current in possibilities:
+        if [current[1], current[2]] in visited:
+            continue
+        if min == "none" or current[3] < min[3]:
+            min = current
 
+    return min
 
-
-
-def getPossibleNonVisitedMoves(current, openList, visited, distances):
+def get_possible_moves_with_names(current):
     possibilities = []
-    for move in delta:
-        possibility = [current[1] + move[0], current[2] + move[1]]
 
-        x = possibility[1]
-        y = possibility[0]
-        #Remove if off grid
-        if x < 0 or x >= len(grid[0]) or y < 0 or y >= len(grid):
-            continue
-        #Remove if already visited
-        if [possibility[0], possibility[1]] in visited:
-            continue
-        #Remove if on obstacle
-        if grid[y][x] == 1:
+    for i in range(len(action)):
+        next_orientation = current[2] + action[i]
+        next_orientation = next_orientation % len(forward)
+
+        #move was made with current orientation. Orientation is changed first when moving, then the move is actioned
+        move = forward[next_orientation]
+
+        next_step = [current[0] + move[0], current[1] + move[1], next_orientation, current[3] + cost[i]]
+
+        #Check off board
+        if next_step[0] < 0 or next_step[0] >= len(grid) or next_step[1] < 0 or next_step[1] >= len(grid[0]):
             continue
 
-        possibilities.append(possibility)
+        #Check for obstacle
+        if grid[next_step[0]][next_step[1]] == 1:
+            continue
 
-    for possibility in possibilities:
-        x = possibility[1]
-        y = possibility[0]
-        openList.append([current[0] + cost_step, y, x, current[0] + distances[y][x]])
+        possibilities.append([next_step, action_name[i]])
 
     return possibilities
 
 
-def compute_value(path_goal):
-    output = [[[999 for col in range(len(grid[0]))] for row in range(len(grid))] for theta in range(4)]
+def get_next_move_with_name(current, distances):
+    possibilities = get_possible_moves_with_names(current)
 
+    if len(possibilities) == 0:
+        return "fail"
 
-#    for i in range(len(output)):
-#        print "Theta: " + str(i)
-#        for row in output[i]:
-#            print row
+    optimal_with_name = possibilities[0]
+    for possibility in possibilities:
+        current_optimal = optimal_with_name[0]
+        possible_move = possibility[0]
 
+        g_for_current_optimal = distances[current_optimal[2]][current_optimal[0]][current_optimal[1]] + current_optimal[3]
+        g_for_possibility = distances[possible_move[2]][possible_move[0]][possible_move[1]] + possible_move[3]
 
-    possible_prev_steps = []
-    for i in range(4):
-        possible_prev_steps.append([path_goal[0], path_goal[1], i, 0])
-    changed = True
-    while changed:
-        possible_prev_steps_for_next_iter = []
-        changed = False
-        for current in possible_prev_steps:
-            old_value = output[current[2]][current[0]][current[1]]
-            if old_value > current[3]:
-                output[current[2]][current[0]][current[1]] = current[3]
-                changed = True
+        if g_for_possibility < g_for_current_optimal:
+            optimal_with_name = possibility
 
-            possible_prev_steps_for_next_iter.extend(compute_possible_prev_steps(current))
+    return optimal_with_name
 
-        possible_prev_steps = possible_prev_steps_for_next_iter
+def fill_in_grid_from(current, moves_grid, distances):
+    current = [current[0], current[1], current[2], 0]
+    while current[0] != goal[0] or current[1] != goal[1]:
+        next_with_name = get_next_move_with_name(current, distances)
 
-    return output
+        name = next_with_name[1]
 
+        moves_grid[current[0]][current[1]] = name
 
-def compute_possible_prev_steps(current):
-    prev_steps = []
-    orientation = current[2]
+        current = next_with_name[0]
 
-    for i in range(len(action)):
-        prev_orientation = orientation - action[i]
-        prev_orientation = prev_orientation % len(forward)
-
-        #move was made with current orientation. Orientation is changed first when moving, then the move is actioned
-        move = forward[orientation]
-
-        prev_step = [current[0] - move[0], current[1] - move[1], prev_orientation, current[3] + cost[i]]
-
-        #Check off board
-        if prev_step[0] < 0 or prev_step[0] >= len(grid) or prev_step[1] < 0 or prev_step[1] >= len(grid[0]):
-            continue
-
-#        Check if already visited
-#        if visited[prev_step[2]][prev_step[0]][prev_step[1]]:
-#            continue
-
-        #Check for obstacle
-        if grid[prev_step[0]][prev_step[1]] == 1:
-            continue
-
-        prev_steps.append(prev_step)
-
-    return prev_steps
+    moves_grid[current[0]][current[1]] = "*"
 
 def optimum_policy2D():
-    return compute_value(goal)
+    costs = compute_to_goal(goal)
 
-matrix = optimum_policy2D()
-for t in range(len(matrix)):
-    theta_matrix = matrix[t]
-    print "Theta " + str(t)
-    for row in theta_matrix:
-        print row
+    for t in range(len(costs)):
+        theta_matrix = costs[t]
+        print "Theta " + str(t)
+        for row in theta_matrix:
+            print row
+    print
+
+    moves = [[' ' for row in range(len(grid[0]))] for col in range(len(grid))]
+
+    fill_in_grid_from(init, moves, costs)
+
+    return moves
+
+for row in optimum_policy2D():
+    print row
