@@ -131,4 +131,3 @@ def stochastic_value():
     
     return value, policy
 
-stochastic_value()
