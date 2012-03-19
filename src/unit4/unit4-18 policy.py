@@ -39,17 +39,15 @@ def compute_value():
     output = [[99 for row in range(len(grid[0]))] for col in range(len(grid))]
 
     next_steps = []
-    next_steps.append(goal)
-    distance_counter = 0
+    next_steps.append([goal[0], goal[1], 0])
     while len(next_steps) > 0:
         next_steps_for_next_iter = []
         for current in next_steps:
-            output[current[0]][current[1]] = distance_counter
+            output[current[0]][current[1]] = current[2]
             visited[current[0]][current[1]] = True
 
             next_steps_for_next_iter.extend(compute_next_steps(current, visited))
 
-        distance_counter += 1
         next_steps = next_steps_for_next_iter
 
     return output
@@ -57,7 +55,7 @@ def compute_value():
 def compute_next_steps(current, visited):
     next_steps = []
     for d in delta:
-        next_step = [current[0] + d[0], current[1] + d[1]]
+        next_step = [current[0] + d[0], current[1] + d[1], current[2] + cost_step]
 
         #Check off board
         if next_step[0] < 0 or next_step[0] >= len(grid) or next_step[1] < 0 or next_step[1] >= len(grid[0]):
@@ -183,6 +181,26 @@ def optimum_policy():
     movesGrid[goal[0]][goal[1]] = '*'
 
     return movesGrid
+
+def compute_value2():
+    visited = [[False for row in range(len(grid[0]))] for col in range(len(grid))]
+    output = [[99 for row in range(len(grid[0]))] for col in range(len(grid))]
+
+    next_steps = []
+    next_steps.append(goal)
+    distance_counter = 0
+    while len(next_steps) > 0:
+        next_steps_for_next_iter = []
+        for current in next_steps:
+            output[current[0]][current[1]] = distance_counter
+            visited[current[0]][current[1]] = True
+
+            next_steps_for_next_iter.extend(compute_next_steps(current, visited))
+
+        distance_counter += 1
+        next_steps = next_steps_for_next_iter
+
+    return output
 
 for row in optimum_policy():
     print row
