@@ -46,20 +46,19 @@ def smooth(path, weight_data = 0.5, weight_smooth = 0.1):
     change = 1000
     while change > 0.000001:
         change = 0
-#        temp_newpath = [[0 for col in range(len(path[0]))] for row in range(len(path))]
-#        for i in range(len(path)):
-#            for j in range(len(path[0])):
-#                temp_newpath[i][j] = newpath[i][j]
+        temp_newpath = [[0 for col in range(len(path[0]))] for row in range(len(path))]
+        for i in range(len(path)):
+            for j in range(len(path[0])):
+                temp_newpath[i][j] = newpath[i][j]
 
 
 
         for i in range(1, (len(newpath)-1)):
             for d in range(len(newpath[i])):
-                modifier1 = weight_data * (path[i][d] - newpath[i][d])
-                newpath[i][d] += modifier1
-                modifier2 = weight_smooth * (newpath[i-1][d] + newpath[i+1][d] - 2 * newpath[i][d])
+                modifier1 = weight_data * (path[i][d] - temp_newpath[i][d])
+                modifier2 = weight_smooth * (temp_newpath[i-1][d] + temp_newpath[i+1][d] - 2 * temp_newpath[i][d])
 
-                newpath[i][d] += modifier2
+                newpath[i][d] += modifier1 + modifier2
                 change += abs(modifier1 + modifier2)
 
     return newpath # Leave this line for the grader!
