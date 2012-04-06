@@ -1,20 +1,16 @@
 # -----------
 # User Instructions
 #
-# Modify your doit function to incorporate 3
-# distance measurements to a landmark(Z0, Z1, Z2).
-# You should use the provided expand function to
-# allow your Omega and Xi matrices to accomodate
-# the new information.
-#
-# Each landmark measurement should modify 4
-# values in your Omega matrix and 2 in your
-# Xi vector.
-#
-# Add your code at line 356.
+# Modify the previous code to adjust for a highly
+# confident last measurement. Do this by adding a
+# factor of 5 into your Omega and Xi matrices
+# as described in the video.
 
+
+ 
 from math import *
 import random
+
 
 #===============================================================
 #
@@ -308,62 +304,81 @@ class matrix:
         return repr(self.value)
 
 
-
 # ######################################################################
 # ######################################################################
 # ######################################################################
 
 
-"""
-For the following example, you would call doit(-3, 5, 3, 10, 5, 2):
-3 robot positions
-  initially: -3 (measure landmark to be 10 away)
-  moves by 5 (measure landmark to be 5 away)
-  moves by 3 (measure landmark to be 2 away)
+# Including the 5 times multiplier, your returned mu should now be:
+#
+# [[-3.0],
+#  [2.179],
+#  [5.714],
+#  [6.821]]
 
-  
 
-which should return a mu of:
-[[-3.0],
- [2.0],
- [5.0],
- [7.0]]
-"""
+
+############## MODIFY CODE BELOW ##################
+
 def doit(initial_pos, move1, move2, Z0, Z1, Z2):
-    omega = matrix([[0., 0., 0., 0.],
-                    [0., 0., 0., 0.],
-                    [0., 0., 0., 0.],
-                    [0., 0., 0., 0.]])
+    Omega = matrix([[1.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0]])
+    Xi    = matrix([[initial_pos],
+                    [0.0],
+                    [0.0]])
 
-    xi = matrix([[0], [0], [0], [0]])
+    Omega += matrix([[1.0, -1.0, 0.0],
+                     [-1.0, 1.0, 0.0],
+                     [0.0, 0.0, 0.0]])
+    Xi    += matrix([[-move1],
+                     [move1],
+                     [0.0]])
+    
+    Omega += matrix([[0.0, 0.0, 0.0],
+                     [0.0, 1.0, -1.0],
+                     [0.0, -1.0, 1.0]])
+    Xi    += matrix([[0.0],
+                     [-move2],
+                     [move2]])
+    
+    Omega = Omega.expand(4, 4, [0, 1, 2], [0, 1, 2])
+    Xi =    Xi.expand(4, 1, [0, 1, 2], [0])
 
-    moves = [initial_pos, move1, move2]
-    for i in range(len(moves)):
-        omega.value[i][i] += 1
-        xi.value[i][0] += moves[i]
+    Omega += matrix([[1.0, 0.0, 0.0, -1.0],
+                     [0.0, 0.0, 0.0, 0.0],
+                     [0.0, 0.0, 0.0, 0.0],
+                     [-1.0, 0.0, 0.0, 1.0]])
+    Xi    += matrix([[-Z0],
+                     [0.0],
+                     [0.0],
+                     [Z0]])
 
-        if i > 0:
-            omega.value[i-1][i-1] += 1
-            omega.value[i][i-1] -= 1
-            omega.value[i-1][i] -= 1
-            xi.value[i-1][0] -= moves[i]
+    Omega += matrix([[0.0, 0.0, 0.0, 0.0],
+                     [0.0, 1.0, 0.0, -1.0],
+                     [0.0, 0.0, 0.0, 0.0],
+                     [0.0, -1.0, 0.0, 1.0]])
+    Xi    += matrix([[0.0],
+                     [-Z1],
+                     [0.0],
+                     [Z1]])
 
-    landmark_observations = [Z0, Z1, Z2]
-    moves_num = len(landmark_observations)
-    for i in range(moves_num):
-        omega.value[i][moves_num] -= 1
-        omega.value[i][i] += 1
-        xi.value[i][0] -= landmark_observations[i]
+    Omega += matrix([[0.0, 0.0, 0.0, 0.0],
+                     [0.0, 0.0, 0.0, 0.0],
+                     [0.0, 0.0, 5.0, -5.0],
+                     [0.0, 0.0, -5.0, 5.0]])
+    Xi    += matrix([[0.0],
+                     [0.0],
+                     [-5*Z2],
+                     [5*Z2]])
 
-        #Handle landmark in the same loop
-        omega.value[moves_num][moves_num] += 1
-        omega.value[moves_num][i] -= 1
-        xi.value[moves_num][0] += landmark_observations[i]
-
-
-    mu = omega.inverse() * xi
+    Omega.show('Omega: ')
+    Xi.show('Xi:    ')
+    mu = Omega.inverse() * Xi
+    mu.show('Mu:    ')
+    
     return mu
 
-print doit(-3, 5, 3, 10, 5, 2)
+doit(-3, 5, 3, 10, 5, 1)
 
 
