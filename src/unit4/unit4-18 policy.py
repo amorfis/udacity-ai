@@ -168,6 +168,11 @@ def getPossibleNonVisitedMoves(current, openList, visited, distances):
 
 def optimum_policy():
     distances = compute_value()
+
+    print "Distances:"
+    for row in distances:
+        print row
+
     movesGrid = [[' ' for row in range(len(grid[0]))] for col in range(len(grid))]
 
     for r in range(len(grid)):
